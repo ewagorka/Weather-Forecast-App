@@ -1,11 +1,15 @@
+//get today's date
 var today = moment();
-console.log(today);
 
+//store results from API query as a global value
 var results;
 
+//array to save search history
 var searches=[];
 
+//render search history
 renderSearches();
+
 //when search button is clicked
 $("#search-button").on("click", function (event) {
     //prevent default
@@ -16,8 +20,9 @@ $("#search-button").on("click", function (event) {
 
     //get value from input
     var qEl = $("#search-input").val().trim();
-
+    //form query url
     var queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + qEl + "&units=metric&appid=88c1c3f53bd4ff31a0846bec366c6e7c";
+    //get data from query
     $.ajax({
         url: queryURL,
         method: "GET"
@@ -33,6 +38,8 @@ $("#search-button").on("click", function (event) {
 });
 
 function displayForecast(response){
+
+    today = moment();
     //store response from query
     results = response;
     console.log(results);
@@ -41,6 +48,9 @@ function displayForecast(response){
     var city = response.city.name;
     //get today's most recent data
     var todayData = response.list[0];
+
+
+    //Todays weather forecast
 
     //Display heading
     $("#today").children("h2").text(city +" "+today.format("DD/MM/YYYY"));
@@ -51,8 +61,8 @@ function displayForecast(response){
         "Temp: "+(todayData.main.temp).toFixed(1)+"°C"+"<br>"+
         "Wind: "+todayData.wind.speed+" KPH"+"<br>"+
         "Humidty: "+todayData.main.humidity+"%");
-    //Todays weather forecast
-
+    
+    //5 Days weather forecast
     //for each card in the 5 day forecast area
     for (var i = 0; i < 5; i++) {
         
@@ -90,11 +100,14 @@ function displayForecast(response){
 //Save search and render new button
 function saveSearch(value){
 
+    //create a button
     var button = $("<button>")
     button.text(value).attr("class","btn")
 
-    $("#history").append(button);
+    // add to the history area in html
+    $("#history").prepend(button);
 
+    //save search in array and save to local storage
     searches.push(value);
     localStorage.setItem("savedSearches",JSON.stringify(searches))
 
@@ -104,9 +117,8 @@ function saveSearch(value){
 function renderSearches(){
     var savedSearches = JSON.parse(localStorage.getItem("savedSearches"))
 
-    console.log(savedSearches);
+    //if there are saved searches in the local storage, then update the searches array
     if(savedSearches!= null){
-        console.log("hey");
         searches =savedSearches;
     }
 
@@ -114,19 +126,22 @@ function renderSearches(){
         var button = $("<button>")
         button.text(searches[i]).attr("class","btn savedBtn")
 
-        $("#history").append(button);
+        $("#history").prepend(button);
     }
 }
 
+// Display data when clicked on the button from history search
 $(document).on("click",".savedBtn",function(event){
     event.preventDefault();
     //empty forecast area
     $("#forecast").empty();
 
-    //get value from input
-    var qEl = $(this).text().trim();
+    //get value from the saved button
+    var buttonText = $(this).text().trim();
 
-    var queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + qEl + "&units=metric&appid=88c1c3f53bd4ff31a0846bec366c6e7c";
+    //form query url
+    var queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + buttonText + "&units=metric&appid=88c1c3f53bd4ff31a0846bec366c6e7c";
+    //get data from query
     $.ajax({
         url: queryURL,
         method: "GET"
